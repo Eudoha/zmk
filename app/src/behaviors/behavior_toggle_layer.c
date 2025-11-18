@@ -25,7 +25,6 @@ enum toggle_mode {
 
 struct behavior_tog_config {
     enum toggle_mode toggle_mode;
-    bool locking;
 };
 
 static int tog_keymap_binding_pressed(struct zmk_behavior_binding *binding,
@@ -35,11 +34,11 @@ static int tog_keymap_binding_pressed(struct zmk_behavior_binding *binding,
     const struct behavior_tog_config *cfg = zmk_behavior_get_binding(binding->behavior_dev)->config;
     switch (cfg->toggle_mode) {
     case ON:
-        return zmk_keymap_layer_activate(binding->param1, cfg->locking);
+        return zmk_keymap_layer_activate(binding->param1);
     case OFF:
-        return zmk_keymap_layer_deactivate(binding->param1, cfg->locking);
+        return zmk_keymap_layer_deactivate(binding->param1);
     case FLIP:
-        return zmk_keymap_layer_toggle(binding->param1, cfg->locking);
+        return zmk_keymap_layer_toggle(binding->param1);
     default:
         return -ENOTSUP;
     };
@@ -80,14 +79,13 @@ static const struct behavior_driver_api behavior_tog_driver_api = {
 #endif // IS_ENABLED(CONFIG_ZMK_BEHAVIOR_METADATA)
 };
 
-#define TG_INST(n)                                                                                 \
+#define KT_INST(n)                                                                                 \
     static const struct behavior_tog_config behavior_tog_config_##n = {                            \
         .toggle_mode = DT_ENUM_IDX(DT_DRV_INST(n), toggle_mode),                                   \
-        .locking = DT_INST_PROP_OR(n, locking, false),                                             \
     };                                                                                             \
     BEHAVIOR_DT_INST_DEFINE(n, NULL, NULL, NULL, &behavior_tog_config_##n, POST_KERNEL,            \
                             CONFIG_KERNEL_INIT_PRIORITY_DEFAULT, &behavior_tog_driver_api);
 
-DT_INST_FOREACH_STATUS_OKAY(TG_INST)
+DT_INST_FOREACH_STATUS_OKAY(KT_INST)
 
 #endif /* DT_HAS_COMPAT_STATUS_OKAY(DT_DRV_COMPAT) */
