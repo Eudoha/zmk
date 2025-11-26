@@ -700,41 +700,36 @@ int zmk_keymap_apply_position_state(uint8_t source, zmk_keymap_layer_id_t layer_
 }
 
 int zmk_keymap_position_state_changed(uint8_t source, uint32_t position, bool pressed,
-						  int64_t timestamp) {
-	if (pressed) {
-zmk_keymap_active_behavior_layer[position] = _zmk_keymap_layer_state;
-	}
+                                      int64_t timestamp) {
+    if (pressed) {
+        zmk_keymap_active_behavior_layer[position] = _zmk_keymap_layer_state;
+    }
 
-	for (int layer_idx = ZMK_KEYMAP_LAYERS_LEN - 1;
-     		layer_idx >= _zmk_keymap_layer_default; layer_idx--) {
-	if (zmk_keymap_layer_active_with_state(layer_id, zmk_keymap_active_behavior_layer[position])) {
+    // We use int here to be sure we don't loop layer_idx back to UINT8_MAX
+    for (int layer_idx = ZMK_KEYMAP_LAYERS_LEN - 1;
+         layer_idx >= LAYER_ID_TO_INDEX(_zmk_keymap_layer_default); layer_idx--) {
+        zmk_keymap_layer_id_t layer_id = LAYER_INDEX_TO_ID(layer_idx);
 
-		int ret = 
-			zmk_keymap_apply_position_state(source, layer_id, position, pressed, timestamp);
-		if (ret > 0) {
-if(layer_id == ZMK_KEYMAP_LAYERS_LEN - 1 || layer_id == ZMK_KEYMAP_LAYERS_LEN - 2)
-{
-zmk_keymap_layer_deactivate(layer_id);
-LOG_DBG("behavior processing deactive layer : %d ret : %d",layer_id, ret);
-}
+        if (layer_id == ZMK_KEYMAP_LAYER_ID_INVAL) {
+            continue;
+        }
+        if (zmk_keymap_layer_active_with_state(layer_id,
+                                               zmk_keymap_active_behavior_layer[position])) {
+            int ret =
+                zmk_keymap_apply_position_state(source, layer_id, position, pressed, timestamp);
+            if (ret > 0) {
+                LOG_DBG("behavior processing to continue to next layer");
+                continue;
+            } else if (ret < 0) {
+                LOG_DBG("Behavior returned error: %d", ret);
+                return ret;
+            } else {
+                return ret;
+            }
+        }
+    }
 
-LOG_DBG("behavior processing to continue to next layer");
-
-continue;
-
-} else if (ret < 0) {
-
-LOG_DBG("Behavior returned error: %d", ret);
-
-return ret;
-
-			} else {
-				return ret;
-			}
-		}
-	}
-
-	return -ENOTSUP;
+    return -ENOTSUP;
 }
 
 #if ZMK_KEYMAP_HAS_SENSORS
