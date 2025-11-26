@@ -715,11 +715,11 @@ int ret = zmk_keymap_apply_position_state(source, layer, position, pressed, time
 
 	if (ret > 0) {
 
-+if(layer == ZMK_KEYMAP_LAYERS_LEN - 1 || layer == ZMK_KEYMAP_LAYERS_LEN - 2)
-+{
-+zmk_keymap_layer_deactivate(layer);
-+LOG_DBG("behavior processing deactive layer : %d ret : %d",layer, ret);
-+}
+if(layer == ZMK_KEYMAP_LAYERS_LEN - 1 || layer == ZMK_KEYMAP_LAYERS_LEN - 2)
+{
+zmk_keymap_layer_deactivate(layer);
+LOG_DBG("behavior processing deactive layer : %d ret : %d",layer, ret);
+}
 LOG_DBG("behavior processing to continue to next layer");
 continue;
 } else if (ret < 0) {
